@@ -1,0 +1,101 @@
+---
+title: "LBB_PS: Brazilian E-Commerce Public Dataset by Olist Kaggle "
+author: "Khusnul Khotimah"
+date: "`r format(Sys.Date(), '%B %e, %Y')`"
+output: 
+  html_document:
+    theme: flatly
+    higlight: zenburn
+    toc: true
+    toc_float:
+      collapsed: false
+    number_sections: true
+    df_print: paged
+---
+
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+about the data:
+Brazilian E-Commerce Public Dataset by Olist
+This is a Brazilian ecommerce public dataset of orders made at Olist Store. The dataset has information of 100k orders from 2016 to 2018 made at multiple marketplaces in Brazil. 
+
+
+#Preparing data#
+```{r}
+
+order <- read.csv("final_order.csv")
+order <- na.omit(order)
+str(order)
+
+order[,c("state", "city", "order_status", "product_category")] <- lapply(order[,c("state", "city", "order_status", "product_category")],as.factor)
+
+order$purchase_date <- as.Date(order$purchase_date , "%Y-%m-%d")
+class(order$purchase_date)
+
+
+df_olist <- data.frame(order$order_id, order$purchase_date, order$state, order$city, order$order_status, order$delivery_days, order$shipping_cost)
+str(df_olist)
+```
+
+#analisis Shipping cost#
+penjelsan: shipping cost memiliki nilai
+mean: $ 23.76164
+ragam: 565.837
+median: $ 17.63
+```{r}
+mean(df_olist$order.shipping_cost);
+var(df_olist$order.shipping_cost);
+median(df_olist$order.shipping_cost)
+```
+
+#analisis delivery days
+penjelsan: delivery days memiliki nilai
+mean:  12.43149 days or 13 days
+ragam: 90.60235
+median: 10 days
+```{r}
+mean(df_olist$order.delivery_days);
+var(df_olist$order.delivery_days);
+median(df_olist$order.delivery_days)
+```
+
+#order city dan status order
+#akan dilihat pembeli dari city= sao pailo dengan order status=delivered
+simpulan: terdapat 15812 order yang terdaftar
+```{r}
+sao_delivered <- df_olist[df_olist$order.city == "sao paulo" &
+                            df_olist$order.order_status == "delivered",]
+nrow(sao_delivered)
+```
+#order state dan delivery days
+#akan dilihat pembeli dari state=MG dengan delivery days di atas rata-rata
+simpulanL terdapat 4173 order dari state MG dengan delivery days di atas rata-rata
+```{r}
+mean_days <-  mean(df_olist$order.delivery_days)
+MG_meanhigh <- df_olist[df_olist$order.state == "MG" &
+                            df_olist$order.delivery_days > mean_days,]
+nrow(MG_meanhigh)
+
+```
+#Berikut merupakan rata-rata harga pengiriman ke masing-masing State di Brazil
+simpulan: harga rata-rata tertinggi dimiliki oleh state: PB== $ 49.84532
+dan terendah adalah SP== $ 18.14434
+```{r}
+mon <- aggregate(df_olist$order.shipping_cost~df_olist$order.state, FUN = mean)
+View(mon)
+
+```
+
